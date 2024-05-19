@@ -1,0 +1,170 @@
+from selenium import webdriver
+from selenium.webdriver.edge.service import Service as EdgeService
+from webdriver_manager.microsoft import EdgeChromiumDriverManager
+from selenium.webdriver.edge.options import Options
+from selenium.webdriver.support.ui import WebDriverWait
+from selenium.webdriver.support import expected_conditions as EC
+from selenium.common.exceptions import NoSuchElementException, TimeoutException, ElementNotInteractableException
+from selenium.webdriver.common.by import By
+import pandas as pd
+import random
+from time import sleep
+
+def setup_driver():
+    options = Options()
+    options.add_argument("--headless")  # Run in headless mode for faster execution
+    options.page_load_strategy = 'normal'  # Ensure entire page loads
+    driver = webdriver.Edge(service=EdgeService(EdgeChromiumDriverManager().install()), options=options)
+    driver.implicitly_wait(10)  # Implicit wait for all elements
+    return driver
+
+def get_stock_list(driver, url):
+    driver.get(url)
+    sleep(random.uniform(1, 3))
+    stocks = driver.find_elements(By.CSS_SELECTOR, ".m-b .text-center [href]")
+    list_stocks = [elem.text for elem in stocks]
+    links = [elem.get_attribute('href') for elem in stocks]
+    return list_stocks, links
+
+def wait_for_element(driver, xpath, timeout=120):
+    return WebDriverWait(driver, timeout).until(EC.presence_of_element_located((By.XPATH, xpath)))
+
+def scrape_data(driver, link):
+    driver.get(link)
+    data = {}
+    while True:
+        for m in range(1, 4):
+            n = 1
+            while True:
+                try:
+                    wait_for_element(driver, "/html/body/div[4]/div[16]/div/div[5]/div[2]/div[2]/div[1]/div[4]/div/div/div[2]")
+                    check = driver.find_element(By.XPATH, f"/html/body/div[4]/div[16]/div/div[5]/div[2]/div[2]/div[1]/div[4]/div/div/div[2]/div[{m}]/table/tbody/tr[{n}]/td[1]")
+                    at = check.text
+                    if len(at) == 0:
+                        break
+                    if at not in data:
+                        data[at] = []
+                except NoSuchElementException:
+                    break
+
+                n += 1
+        try:
+            wait_for_element(driver, "/html/body/div[4]/div[16]/div/div[5]/div[2]/div[2]/div[1]/div[4]/div/div/div[3]/div[2]/div[2]")
+            prev_part = driver.find_element(By.XPATH, "/html/body/div[4]/div[16]/div/div[5]/div[2]/div[2]/div[1]/div[4]/div/div/div[3]/div[2]/div[2]")
+            if 'disabled' in prev_part.get_attribute('class'):
+                print("Reached the last page")
+                break
+            prev_part.click()
+            print("Clicked on the 'prev' button")
+            sleep(random.uniform(1, 3))
+        except Exception as e:
+            print(f"Reached the last page or element not interactable: {e}")
+            break
+    driver.get(link)
+    while True:
+        for q in range(1, 4):
+            j = 1
+            while True:
+                try:
+                    wait_for_element(driver, "/html/body/div[4]/div[16]/div/div[5]/div[2]/div[2]/div[1]/div[4]/div/div/div[2]")
+
+                    check = driver.find_element(By.XPATH, f"/html/body/div[4]/div[16]/div/div[5]/div[2]/div[2]/div[1]/div[4]/div/div/div[2]/div[{q}]/table/tbody/tr[{j}]/td[1]")
+                    at = check.text
+                    if len(at) == 0:
+                        print(f"table {q}")
+                        break
+                except NoSuchElementException:
+                    print("No such element")
+                    break
+
+                for k in range(5, 1, -1):
+                    try:
+                        wait_for_element(driver, "/html/body/div[4]/div[16]/div/div[5]/div[2]/div[2]/div[1]/div[4]/div/div/div[2]")
+                        value = driver.find_element(By.XPATH, f"/html/body/div[4]/div[16]/div/div[5]/div[2]/div[2]/div[1]/div[4]/div/div/div[2]/div[{q}]/table/tbody/tr[{j}]/td[{k}]")
+                        data[at].append(value.text)
+                    except NoSuchElementException:
+                        data[at].append('')
+
+                j += 1
+        max_length = max(len(v) for v in data.values())
+        # Pad each list with None values to make their lengths equal
+        for key, value in data.items():
+            if len(value) < max_length:
+                value.extend([""] * (max_length - len(value)))
+        try:
+            wait_for_element(driver, "/html/body/div[4]/div[16]/div/div[5]/div[2]/div[2]/div[1]/div[4]/div/div/div[3]/div[2]/div[2]")
+            prev_part = driver.find_element(By.XPATH, "/html/body/div[4]/div[16]/div/div[5]/div[2]/div[2]/div[1]/div[4]/div/div/div[3]/div[2]/div[2]")
+            if 'disabled' in prev_part.get_attribute('class'):
+                print("Reached the last page")
+                break
+            prev_part.click()
+            print("Clicked on the 'prev' button")
+            sleep(random.uniform(1, 3))
+        except Exception as e:
+            print(f"Reached the last page or element not interactable: {e}")
+            break
+    driver.get(link)
+    data["Time"] = []
+    while True:
+        for i in range(5, 1, -1):
+            try:
+                wait_for_element(driver, "/html/body/div[4]/div[16]/div/div[5]/div[2]/div[2]/div[1]/div[4]/div/div/div[2]/div[1]/table/thead/tr")
+                quarter = driver.find_element(By.XPATH, f"/html/body/div[4]/div[16]/div/div[5]/div[2]/div[2]/div[1]/div[4]/div/div/div[2]/div[1]/table/thead/tr/th[{i}]")
+                data["Time"].append(quarter.text)
+            except NoSuchElementException:
+                print(f"Reached the last page")
+                break
+        try:
+            wait_for_element(driver, "/html/body/div[4]/div[16]/div/div[5]/div[2]/div[2]/div[1]/div[4]/div/div/div[3]/div[2]/div[2]")
+            prev_part = driver.find_element(By.XPATH, "/html/body/div[4]/div[16]/div/div[5]/div[2]/div[2]/div[1]/div[4]/div/div/div[3]/div[2]/div[2]")
+            if 'disabled' in prev_part.get_attribute('class'):
+                print("Reached the last page")
+                break
+            prev_part.click()
+            print("Clicked on the 'prev' button")
+            sleep(random.uniform(1, 3))
+        except (ElementNotInteractableException, NoSuchElementException) as e:
+            print(f"Reached the last page")
+            break
+    max_length = max(len(v) for v in data.values())
+    # Pad each list with None values to make their lengths equal
+    for key, value in data.items():
+        if len(value) < max_length:
+            value.extend([""] * (max_length - len(value)))
+    return data
+
+def save_to_csv(data, filename):
+    df = pd.DataFrame(data)
+    df.to_csv(filename, index=False, encoding='utf-8-sig')
+
+def main():
+    driver = setup_driver()
+    try:
+        url = "https://finance.vietstock.vn/chung-khoan-phai-sinh/vn30f1m/hdtl-cp-anh-huong.htm"
+        list_stocks, links = get_stock_list(driver, url)
+        print(list_stocks)
+        print(links)
+
+        for i, link in enumerate(links):
+            print(f'Crawling {list_stocks[i]}')
+            retries = 3
+            for attempt in range(retries):
+                try:
+                    data = scrape_data(driver, link)
+                    filename = f"D:\\Study Program\\Project\\Quarter_report\\{list_stocks[i]}_quarter_report.csv"
+                    save_to_csv(data, filename)
+                    print(f"Successfully saved {list_stocks[i]}")
+                    break
+                except TimeoutException as e:
+                    print(f"Timeout while scraping {list_stocks[i]} on attempt {attempt + 1} of {retries}: {e}")
+                    if attempt < retries - 1:
+                        print("Retrying...")
+                        sleep(random.uniform(1, 3))
+                    else:
+                        print(f"Failed to scrape {list_stocks[i]} after {retries} attempts")
+
+    finally:
+        driver.quit()
+
+if __name__ == "__main__":
+    main()
