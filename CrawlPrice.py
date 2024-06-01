@@ -107,9 +107,9 @@ class DataLoaderVND(DataLoadProto):
         return stock_data
 
 vn30_companies = [
-    "ACB"
-]
-#, "BCM", "BID", "BVH", "CTG", "FPT", "GAS", "GVR", "HDB", "HPG", "MBB", "MSN", "MWG", "PLX", "POW", "SAB", "SHB", "SSB", "SSI", "STB","TCB", "TPB", "VCB", "VHM", "VIB", "VIC", "VJC", "VNM", "VPB", "VRE"
+    "ACB", "BCM", "BID", "BVH", "CTG", "FPT", "GAS", "GVR", "HDB", "HPG", "MBB",
+    "MSN", "MWG", "PLX", "POW", "SAB", "SHB", "SSB", "SSI", "STB","TCB", "TPB",
+    "VCB", "VHM", "VIB", "VIC", "VJC", "VNM", "VPB", "VRE"]
 # Loop through each stock symbol in VN30 index
 for stock in vn30_companies:
     loader = DataLoader(stock, '2007-01-01', '2030-04-02', minimal=True)
@@ -127,5 +127,6 @@ for stock in vn30_companies:
     # Extract column names from tuples
     data.columns = [col[0] for col in data.columns]
     # Specify the name for the collection
-    data.to_csv(f"D:\\Study Program\\Project\\Price\\{stock}_price.csv", index=False)
+    print(data)
+    #data.to_csv(f"D:\\Study Program\\Project\\Price\\{stock}.csv", index=False)
 

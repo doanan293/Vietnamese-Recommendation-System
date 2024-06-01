@@ -101,7 +101,6 @@ def main():
     driver = setup_driver()
     try:
         list_stocks = get_stock_list(driver)
-        list_stocks = [stock for stock in list_stocks if stock not in ["HPG","FPT","ACB","TCB","HDB","MBB","VPB","MSN","SHB","STB","VCB","VRE","VHM"]]
         logging.info("Stock list: %s", list_stocks)
         for stock in list_stocks:
             logging.info(f"Crawling in {stock}")
