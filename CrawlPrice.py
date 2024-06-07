@@ -106,27 +106,38 @@ class DataLoaderVND(DataLoadProto):
 
         return stock_data
 
-vn30_companies = [
-    "ACB", "BCM", "BID", "BVH", "CTG", "FPT", "GAS", "GVR", "HDB", "HPG", "MBB",
+vn30_companies = ["ACB", "BCM", "BID", "BVH", "CTG", "FPT", "GAS", "GVR", "HDB", "HPG", "MBB",
     "MSN", "MWG", "PLX", "POW", "SAB", "SHB", "SSB", "SSI", "STB","TCB", "TPB",
     "VCB", "VHM", "VIB", "VIC", "VJC", "VNM", "VPB", "VRE"]
 # Loop through each stock symbol in VN30 index
 for stock in vn30_companies:
-    loader = DataLoader(stock, '2007-01-01', '2030-04-02', minimal=True)
+    file_path = f"D:\\Study Program\\Project\\Price\\{stock}_Price.csv"
+    loader = DataLoader(stock, '2024-05-07', '2030-04-02', minimal=True)
     data = loader.download()
     column_mapping = {
         'date': 'Date',
+        'close': 'Close',
+        'open': 'Open',
         'high': 'High',
         'low': 'Low',
-        'open': 'Open',
-        'close': 'Close',
-        'avg': 'Avg',
-        'volume': 'Volume'
+        #'avg': 'Avg',
+        'volume': 'Vol.'
     }
     data = data.rename(columns=column_mapping)
     # Extract column names from tuples
     data.columns = [col[0] for col in data.columns]
     # Specify the name for the collection
-    print(data)
-    #data.to_csv(f"D:\\Study Program\\Project\\Price\\{stock}.csv", index=False)
-
+    df1 = data[["Date", "Close", "Open", "High", "Low", "Vol."]]
+    df1.loc[:, 'Close'] = df1['Close'] * 1000
+    df1.loc[:, 'Open'] = df1['Open'] * 1000
+    df1.loc[:, 'High'] = df1['High'] * 1000
+    df1.loc[:, 'Low'] = df1['Low'] * 1000
+    df2 = pd.read_csv(file_path, index_col = False)
+    # Convert Date columns to date
+    df1['Date'] = pd.to_datetime(df1['Date'])
+    df2['Date'] = pd.to_datetime(df2['Date'])
+    # Merge df2 into df1, ensuring no duplicate dates are included from df2
+    merged_df_correct_order = pd.concat([df1, df2[~df2['Date'].isin(df1['Date'])]], ignore_index=True)
+    # Assuming merged_df_correct_order is already defined and available
+    sorted_merged_df = merged_df_correct_order.sort_values(by='Date', ascending=False).reset_index(drop=True)
+    sorted_merged_df.to_csv(file_path, index=False)
