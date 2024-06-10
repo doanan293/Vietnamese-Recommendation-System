@@ -122,7 +122,7 @@ def scrape_news_for_stock(driver, stock, start_date, end_date):
 
 def main():
     start_date = datetime.strptime("14/05/2024", "%d/%m/%Y")
-    end_date = datetime.strptime("07/12/2030 00:00", "%d/%m/%Y %H:%M")
+    end_date = datetime.strptime("01/01/2050 00:00", "%d/%m/%Y %H:%M")
 
     driver = setup_driver()
     try:
