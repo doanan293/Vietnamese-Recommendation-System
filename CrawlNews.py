@@ -5,41 +5,42 @@ from webdriver_manager.microsoft import EdgeChromiumDriverManager
 from selenium.webdriver.edge.options import Options
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
-from selenium.common.exceptions import NoSuchElementException, TimeoutException, ElementNotInteractableException, \
-    StaleElementReferenceException
+from selenium.common.exceptions import NoSuchElementException, TimeoutException, ElementNotInteractableException, StaleElementReferenceException
 from selenium.webdriver.common.by import By
 import pandas as pd
 import numpy as np
 from time import sleep
 import random
 from datetime import datetime
+import os
+import shutil
 
 # Configure logging
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
 
-
 def setup_driver():
+    def install_driver():
+        for attempt in range(3):
+            try:
+                return EdgeService(EdgeChromiumDriverManager().install())
+            except Exception as e:
+                print(f"Attempt {attempt + 1} failed: {e}")
+                if attempt < 2:
+                    sleep(random.uniform(1, 3))
+                else:
+                    raise e
+
+    # Clean up existing WebDriver cache
+    webdriver_cache = os.path.expanduser("~/.wdm/drivers/edgedriver/linux64/")
+    if os.path.exists(webdriver_cache):
+        shutil.rmtree(webdriver_cache)
+
     options = Options()
-    options.add_argument("--headless")  # Ensure headless mode is activated
-    options.add_argument("--disable-gpu")  # Disable GPU for headless mode
-    driver = webdriver.Edge(service=EdgeService(EdgeChromiumDriverManager().install()), options=options)
-    driver.set_page_load_timeout(120)  # Set page load timeout to 120 seconds
-    driver.implicitly_wait(10)  # Set implicit wait time to 10 seconds
+    options.add_argument("--headless")
+    options.page_load_strategy = 'normal'
+    driver = webdriver.Edge(service=install_driver(), options=options)
+    driver.implicitly_wait(10)
     return driver
-
-
-def get_stock_list(driver):
-    try:
-        driver.get("https://finance.vietstock.vn/chung-khoan-phai-sinh/vn30f1m/hdtl-cp-anh-huong.htm")
-        WebDriverWait(driver, 120).until(
-            EC.presence_of_element_located((By.CSS_SELECTOR, ".m-b .text-center [href]"))
-        )
-        stocks = driver.find_elements(By.CSS_SELECTOR, ".m-b .text-center [href]")
-        return [elem.text for elem in stocks]
-    except TimeoutException as e:
-        logging.error("Timeout while fetching stock list: %s", e)
-        return []
-
 
 def is_within_date_range(date_text, start_date, end_date):
     date_format = "%d/%m/%Y %H:%M"  # Adjusted to include the time part
@@ -49,7 +50,6 @@ def is_within_date_range(date_text, start_date, end_date):
     except ValueError:
         logging.warning(f"Date format error: {date_text}")
         return False
-
 
 def scrape_news_for_stock(driver, stock, start_date, end_date):
     driver.get(f"https://s.cafef.vn/tin-doanh-nghiep/{stock}/event.chn")
@@ -119,37 +119,33 @@ def scrape_news_for_stock(driver, stock, start_date, end_date):
         'Content': content_list
     })
 
-
 def main():
-    start_date = datetime.strptime("14/05/2024", "%d/%m/%Y")
+    start_date = datetime.strptime("01/06/2024", "%d/%m/%Y")
     end_date = datetime.strptime("01/01/2050 00:00", "%d/%m/%Y %H:%M")
+    stock = 'HPG'
 
     driver = setup_driver()
     try:
-        list_stocks = get_stock_list(driver)
-        logging.info("Stock list: %s", list_stocks)
-        for stock in list_stocks:
-            logging.info(f"Crawling news for {stock} within date range")
-            news = scrape_news_for_stock(driver, stock, start_date, end_date)
+        logging.info(f"Crawling news for {stock} within date range")
+        news = scrape_news_for_stock(driver, stock, start_date, end_date)
 
-            # Read old news data
-            try:
-                news_old = pd.read_csv(f'D:\\Study Program\\Project\\News\\{stock}_news.csv', index_col=False)
-                # Concatenate new and old data
-                combined_news = pd.concat([news, news_old])
-                # Remove duplicates
-                combined_news = combined_news.drop_duplicates(subset=['Link'])
-            except FileNotFoundError:
-                logging.warning(f"No existing news file found for {stock}, creating a new one.")
-                combined_news = news
+        # Read old news data
+        try:
+            news_old = pd.read_csv(f'/News/{stock}_news.csv', index_col=False)
+            # Concatenate new and old data
+            combined_news = pd.concat([news, news_old])
+            # Remove duplicates
+            combined_news = combined_news.drop_duplicates(subset=['Link'])
+        except FileNotFoundError:
+            logging.warning(f"No existing news file found for {stock}, creating a new one.")
+            combined_news = news
 
-            # Save combined data back to CSV
-            combined_news.to_csv(f'D:\\Study Program\\Project\\News\\{stock}_news.csv', index=False,
-                                 encoding='utf-8-sig')
-            logging.info(f"Successfully scraped and merged {stock} news")
+        # Save combined data back to CSV
+        combined_news.to_csv(f'/News/{stock}_news.csv', index=False,
+                             encoding='utf-8-sig')
+        logging.info(f"Successfully scraped and merged {stock} news")
     finally:
         driver.quit()
-
 
 if __name__ == "__main__":
     main()

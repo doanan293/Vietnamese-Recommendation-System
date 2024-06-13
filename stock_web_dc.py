@@ -24,18 +24,17 @@ def add_bg_and_custom_styles():
         <style>
         .stApp {{
             background-color: #ffffff;
-            background-image: radial-gradient(#000000 0.75px, #ffffff 0.75px);
-            background-size: 15px 15px;
         }}
         .css-18e3th9 {{
             padding: 10px;
             background-color: #f0f2f6;
             border-radius: 10px;
             margin: 10px;
+            color: #000000 !important;
         }}
         .css-1aumxhk {{
             font-size: 18px;
-            color: #333;
+            color: #000000 !important;
         }}
         .css-1aumxhk input {{
             border: 1px solid #ddd;
@@ -44,39 +43,33 @@ def add_bg_and_custom_styles():
             font-size: 16px;
             width: 100%;
             margin-bottom: 10px;
+            color: #000000 !important;
         }}
         .st-emotion-cache-1aumxhk {{
-            color: #FFFFFF !important;
+            color: #000000 !important;
             font-weight: bold !important;
-        }}
-        .st-emotion-cache-1aumxhk input {{
-            color: #FFFFFF !important;
         }}
         .element-container {{
-            color: #FFFFFF !important;
-            font-weight: bold !important;
-        }}
-        .st.sidebar.header {{
-            color: #FFFFFF !important;
+            color: #000000 !important;
             font-weight: bold !important;
         }}
         .main-content h1, .main-content h2, .main-content h3, .main-content h4, .main-content h5, .main-content h6 {{
-            color: black !important;
+            color: #000000 !important;
         }}
         .main-content p {{
-            color: black !important;
+            color: #000000 !important;
         }}
         .news-title {{
             font-size: 18px;
             font-weight: bold;
-            color: black !important;
+            color: #000000 !important;
             text-decoration: none;
             display: block;
             margin-bottom: 1px;
         }}
         .news-date {{
             font-size: 14px;
-            color: grey;
+            color: #000000 !important;
             margin-bottom: 1px;
         }}
         hr {{
@@ -92,85 +85,57 @@ def add_bg_and_custom_styles():
         .stTabs {{
             margin-bottom: 10px;
         }}
-        .stTabs .stTab {{
-            padding: 10px;
-            margin: 5px;
-            background-color: #f0f2f6;
-            border-radius: 5px;
+        .stTabs [role="tab"] {{
+            color: #000000 !important;
         }}
-        .stTabs .stTab:hover {{
-            background-color: #e0e2e6;
+        .stTabs [role="tab"]:hover {{
+            color: #000000 !important;
         }}
-        .stTabs .stTab.active {{
-            background-color: #d0d2d6;
-        }}
-        /* Custom Sidebar Styles */
-        .st-emotion-cache-1gv3huu {{
-            background-color: #E6F7FF !important;
-            padding: 20px !important;
-            border-radius: 10px !important;
-            border: 2px solid #BDC3C7 !important;
-        }}
-        .st-emotion-cache-dvne4q {{
-            color: #ECF0F1 !important;
-        }}
-        .st-emotion-cache-1aumxhk {{
-            font-size: 22px !important;
-            color: #FFFFFF !important;
-            font-weight: bold !important;
-            text-align: center !important;
-            margin-bottom: 20px !important;
-        }}
-        .st-emotion-cache-1avcm0n {{
-            color: #E6F7FF !important;
-            background-color: #FFFFFF !important;
-            border: 2px solid #BDC3C7 !important;
-            border-radius: 10px !important;
-            padding: 10px !important;
-            font-size: 16px !important;
-        }}
-        .st-emotion-cache-1avcm0n:hover {{
-            border: 2px solid #888888 !important;
-        }}
-        .css-1aumxhk {{
-            color: #FFFFFF !important;  /* Set text color to white */
+        .stTabs [role="tab"][aria-selected="true"] {{
+            color: #ff0000 !important;  /* Change active tab color to red */
         }}
         .st-emotion-cache-183lzff.exotz4b0 {{
-            color: black !important;  /* Set text color to black */
+            color: #000000 !important;
             background-color: white !important;
             padding: 10px;
             border-radius: 10px;
             border: 2px solid #ddd;
             margin: 10px 0;
         }}
+        .st-emotion-cache-10trblm.e1nzilvr1 {{
+            color: #000000 !important;  /* Set text color to black */
+        }}
         </style>
         """,
         unsafe_allow_html=True
     )
 
-
 # Apply the custom styles
 add_bg_and_custom_styles()
 
 
-def get_price_from_csv(stock_code, folder_path='D:\\Study Program\\Project\\Price'):
+
+# Function to read price data from CSV in a folder
+def get_price_from_csv(stock_code, folder_path='C:/Users/admin/PycharmProjects/pythonProject1/Price'):
     csv_file = os.path.join(folder_path, f'{stock_code}_Price.csv')
     try:
-        df = pd.read_csv(csv_file, index_col=False)
-        df['Date'] = pd.to_datetime(df['Date'], format='%m/%d/%Y', errors='coerce')  # Adjusting the date format
+        df = pd.read_csv(csv_file)
+        df['Date'] = pd.to_datetime(df['Date'])
+        #df['Date'] = pd.to_datetime(df['Date'], format='%m/%d/%Y', errors='coerce')  # Adjusting the date format
         df = df.dropna(subset=['Date'])  # Remove any rows with invalid dates
 
         # Remove commas and convert Price-related columns to float
-        df['Close'] = df['Price'].str.replace(',', '').astype(float)
-        df['Open'] = df['Open'].str.replace(',', '').astype(float)
-        df['High'] = df['High'].str.replace(',', '').astype(float)
-        df['Low'] = df['Low'].str.replace(',', '').astype(float)
+        #df['Close'] = df['Price'].str.replace(',', '').astype(float)
+        #df['Open'] = df['Open'].str.replace(',', '').astype(float)
+        #df['High'] = df['High'].str.replace(',', '').astype(float)
+        #df['Low'] = df['Low'].str.replace(',', '').astype(float)
 
-        df = df.sort_values(by='Date', ascending=True).reset_index(drop=True)
+        df = df.sort_values(by='Date', ascending=True)
         return df
     except FileNotFoundError:
         return None
-def get_quarter_report_from_csv(stock_code, folder_path='D:\\Study Program\\Project\\Quarter_report'):
+
+def get_quarter_report_from_csv(stock_code, folder_path='C:/Users/admin/PycharmProjects/pythonProject1/Quarter_report'):
     csv_file = os.path.join(folder_path, f'{stock_code}_quarter_report.csv')
     try:
         df = pd.read_csv(csv_file)
@@ -178,7 +143,7 @@ def get_quarter_report_from_csv(stock_code, folder_path='D:\\Study Program\\Proj
     except FileNotFoundError:
         return None
 # Function to read news data from CSV in a folder
-def get_news_from_csv(stock_code, folder_path='D:\\Study Program\\Project\\News'):
+def get_news_from_csv(stock_code, folder_path='C:/Users/admin/PycharmProjects/pythonProject1/News'):
     csv_file = os.path.join(folder_path, f'{stock_code}_news.csv')
     try:
         df = pd.read_csv(csv_file)
@@ -190,49 +155,33 @@ def get_news_from_csv(stock_code, folder_path='D:\\Study Program\\Project\\News'
 
 # Function to perform OLS regression and plot candlestick chart
 def perform_ols_and_plot(stock_code):
-    file_path1 = f'D:\\Study Program\\Project\\Price\\{stock_code}_Price.csv'
-    file_path2 = f'D:\\Study Program\\Project\\News\\{stock_code}_news.csv'
+    file_path1 = f'C:/Users/admin/PycharmProjects/pythonProject1/Price/{stock_code}_Price.csv'
+    file_path2 = f'C:/Users/admin/PycharmProjects/pythonProject1/News/{stock_code}_news.csv'
 
+    # Load the CSV file into a DataFrame
     df1 = pd.read_csv(file_path1)
     df2 = pd.read_csv(file_path2)
-
     # Convert Date and Time to the same format
     df1['Date'] = pd.to_datetime(df1['Date'])
     df2['Time'] = pd.to_datetime(df2['Time'], format="%d/%m/%Y %H:%M")
 
     # Extract the date part from df2['Time']
     df2['Time'] = df2['Time'].dt.date
+    # Group by date and calculate the sum of "Evaluation"
+    df2 = df2.groupby('Time', as_index=False)['Evaluation'].sum()
 
     # Perform the left join
-    merged_df = pd.merge(df1, df2, left_on=df1['Date'].dt.date, right_on='Time', how='left')
-
-    # Drop the redundant column 'key_0' if needed
-    merged_df.drop(columns=['Link', 'Content'], inplace=True)
-
-    # Check if 'Evaluation' column exists, if not create it
-    if 'Evaluation' not in merged_df.columns:
-        merged_df['Evaluation'] = 0
+    df = pd.merge(df1, df2, left_on=df1['Date'].dt.date, right_on='Time', how='left')
+    df.drop(columns=['Time'], inplace=True)
 
     # Fill NaN values in the 'Evaluation' column with 0
-    merged_df['Evaluation'].fillna(0, inplace=True)
-    merged_df = merged_df.sort_values(by='Date')
-
-    # Remove commas and convert Price-related columns to float
-    merged_df['Close'] = merged_df['Price'].str.replace(',', '').astype(float)
-    merged_df['Open'] = merged_df['Open'].str.replace(',', '').astype(float)
-    merged_df['High'] = merged_df['High'].str.replace(',', '').astype(float)
-    merged_df['Low'] = merged_df['Low'].str.replace(',', '').astype(float)
-
+    df['Evaluation'].fillna(0, inplace=True)
+    df = df.sort_values(by='Date')
     # Insert a new column 'Period' at the first position with values ranging from 1 to the length of the DataFrame
-    merged_df.insert(0, 'Period', range(1, len(merged_df) + 1))
-
-    # Drop the column 'Change %'
-    df = merged_df.drop(columns=['Change %', "Price"])
-
+    df.insert(0, 'Period', range(1, len(df) + 1))
     df['Month'] = pd.to_datetime(df['Date']).dt.month
     # Create dummy variables for 'Month'
     df = pd.get_dummies(df, columns=['Month'], drop_first=True)
-
     # Convert boolean columns to numeric (0 and 1) directly
     bool_columns = df.select_dtypes(include='bool').columns
     df[bool_columns] = df[bool_columns].astype(int)
@@ -247,18 +196,29 @@ def perform_ols_and_plot(stock_code):
     # Fit the multiple regression model
     model = sm.OLS(y, X).fit()
 
+    dt_all = pd.date_range(start=df.index[0], end=df.index[-1])
+
+    dt_obs = [d.strftime("%Y-%m-%d") for d in pd.to_datetime(df.index)]
+
+    dt_breaks = [d for d in dt_all.strftime("%Y-%m-%d").tolist() if not d in dt_obs]
+
     # Plot candlestick chart
-    fig_candlestick = go.Figure(data=[go.Candlestick(x=merged_df['Date'],
-                                                     open=merged_df['Open'],
-                                                     high=merged_df['High'],
-                                                     low=merged_df['Low'],
-                                                     close=merged_df['Close'])])
-    fig_candlestick.update_layout(
-        title='Candlestick chart',
-        xaxis_title='Date',
-        yaxis_title='Price',
-        xaxis_rangeslider_visible=False
-    )
+    import plotly.graph_objects as go
+    fig_candlestick = go.Figure(data=[go.Candlestick(x=df['Date'], open=df['Open'],
+                                         high=df['High'], low=df['Low'],
+                                         close=df['Close'])])
+    # Sets customized padding
+    fig_candlestick.update_layout(margin=go.layout.Margin(r=10, b=10))
+
+    # Remove dates without values
+    fig_candlestick.update_xaxes(rangebreaks=[dict(values=dt_breaks)])
+
+    fig_candlestick.update_yaxes(title_text='Price')
+    fig_candlestick.update_xaxes(title_text='Date')
+
+    fig_candlestick.update_layout(title=f"{stock_code}" + ' - CandleStick Chart',
+                      xaxis_rangeslider_visible=False,
+                      height=500, template='plotly_dark')
 
     # Calculate RSI
     df['RSI'] = ta.RSI(df['Close'], 21)
@@ -422,26 +382,29 @@ def display_stock_price_info(stock_code):
         col1, col2 = st.columns(2)
         with col1:
             start_date = st.selectbox('Chọn ngày bắt đầu',
-                                      options=pd.date_range(min_date, max_date).strftime("%Y-%m-%d"))
+                                      options=pd.date_range(min_date, max_date).strftime("%d/%m/%Y %H:%M"))
         with col2:
             end_date = st.selectbox('Chọn ngày kết thúc',
-                                    options=pd.date_range(min_date, max_date).strftime("%Y-%m-%d"))
+                                    options=pd.date_range(min_date, max_date).strftime("%d/%m/%Y %H:%M"))
 
-        start_date = datetime.strptime(start_date, "%Y-%m-%d")
-        end_date = datetime.strptime(end_date, "%Y-%m-%d")
+        start_date = datetime.strptime(start_date, "%d/%m/%Y %H:%M")
+        end_date = datetime.strptime(end_date, "%d/%m/%Y %H:%M")
 
         filtered_price_data = price_data[(price_data['Date'] >= start_date) & (price_data['Date'] <= end_date)]
 
-        st.write(filtered_price_data)
+        st.dataframe(filtered_price_data.reset_index(drop=True))
 
         fig = go.Figure()
         fig.add_trace(
             go.Scatter(x=filtered_price_data['Date'], y=filtered_price_data['Close'], mode='lines', name='Close'))
         fig.update_layout(
-            title=f'Giá đóng cửa của cổ phiếu {stock_code} theo thời gian',
-            xaxis_title='Ngày',
-            yaxis_title='Giá',
+            title=dict(
+                text=f'Giá đóng cửa của cổ phiếu {stock_code} theo thời gian',
+                font=dict(color='black')
+            ),
             xaxis=dict(
+                title=dict(text='Ngày', font=dict(color='black')),
+                tickfont=dict(color='black'),
                 rangeslider=dict(visible=True),
                 type='date',
                 tickformat='%Y-%m-%d',
@@ -449,12 +412,14 @@ def display_stock_price_info(stock_code):
                 color='black'
             ),
             yaxis=dict(
+                title=dict(text='Giá', font=dict(color='black')),
+                tickfont=dict(color='black'),
                 showgrid=False,
                 color='black'
             ),
             plot_bgcolor='rgba(255,255,255,0.8)',
             paper_bgcolor='rgba(0,0,0,0)',
-            font=dict(color='black')
+            font=dict(color='black')  # Set font color to black
         )
         st.plotly_chart(fig)
 
@@ -509,11 +474,16 @@ def display_stock_quarter_report(stock_code):
         unique_times = quarter_report_data['Time'].unique()
         selected_time = st.selectbox('Chọn mốc thời gian', unique_times)
         filtered_data = quarter_report_data[quarter_report_data['Time'] == selected_time]
-        st.dataframe(filtered_data.transpose(), use_container_width=True)  # Transpose the dataframe to display vertically
+
+        # Transpose the dataframe and rename the column
+        filtered_data = filtered_data.transpose()
+        filtered_data.columns = ['Value']  # Rename the column header
+
+        st.dataframe(filtered_data, use_container_width=True)
     else:
         st.error(f"Không tìm thấy báo cáo tài chính theo từng quý cho cổ phiếu {stock_code}.")
         st.write(
-            f"Debug info: File path tried - {os.path.join('D:\\Study Program\\Project\\Quarter_report', f'{stock_code}_quarter_report.csv')}")
+            f"Debug info: File path tried - {os.path.join('C:/Users/admin/PycharmProjects/pythonProject1/Quarter_report', f'{stock_code}_quarter_report.csv')}")
 
 
 # Function to read the filtered sorted stocks from the uploaded file
@@ -529,7 +499,7 @@ def get_filtered_sorted_stocks(file_path):
 
 # Display the filtered sorted stocks
 def display_filtered_sorted_stocks():
-    file_path = 'D:\\Study Program\\Project\\ChooseStock\\goodfindexstock.csv'
+    file_path = 'C:\\Users\\admin\\PycharmProjects\\pythonProject1\\ChooseStock\\goodfindexstock.csv'
     filtered_sorted_stocks = get_filtered_sorted_stocks(file_path)
 
     if not filtered_sorted_stocks.empty:
@@ -540,7 +510,7 @@ def display_filtered_sorted_stocks():
 
 
 def perform_clustering():
-    df = pd.read_csv("D:\\Study Program\\Project\\Clustering\\Clustering.csv")
+    df = pd.read_csv("C:/Users/admin/PycharmProjects/pythonProject1/Clustering.csv")
     df = pd.DataFrame(df)
 
     # Standardize the data

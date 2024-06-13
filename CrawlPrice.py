@@ -2,11 +2,9 @@ import pandas as pd
 import logging
 import requests
 from datetime import datetime
-from requests.packages.urllib3.exceptions import InsecureRequestWarning
-import re
+from urllib3.exceptions import InsecureRequestWarning
 import warnings
-import pymongo
-import numpy as np
+import os
 
 requests.packages.urllib3.disable_warnings(InsecureRequestWarning)
 warnings.simplefilter(action='ignore', category=FutureWarning)
@@ -109,9 +107,10 @@ class DataLoaderVND(DataLoadProto):
 vn30_companies = ["ACB", "BCM", "BID", "BVH", "CTG", "FPT", "GAS", "GVR", "HDB", "HPG", "MBB",
     "MSN", "MWG", "PLX", "POW", "SAB", "SHB", "SSB", "SSI", "STB","TCB", "TPB",
     "VCB", "VHM", "VIB", "VIC", "VJC", "VNM", "VPB", "VRE"]
+
 # Loop through each stock symbol in VN30 index
 for stock in vn30_companies:
-    file_path = f"D:\\Study Program\\Project\\Price\\{stock}_Price.csv"
+    file_path = f"/opt/airflow/dags/Price/{stock}_Price.csv"
     loader = DataLoader(stock, '2024-05-07', '2030-04-02', minimal=True)
     data = loader.download()
     column_mapping = {
@@ -120,7 +119,6 @@ for stock in vn30_companies:
         'open': 'Open',
         'high': 'High',
         'low': 'Low',
-        #'avg': 'Avg',
         'volume': 'Vol.'
     }
     data = data.rename(columns=column_mapping)
@@ -132,12 +130,21 @@ for stock in vn30_companies:
     df1.loc[:, 'Open'] = df1['Open'] * 1000
     df1.loc[:, 'High'] = df1['High'] * 1000
     df1.loc[:, 'Low'] = df1['Low'] * 1000
-    df2 = pd.read_csv(file_path, index_col = False)
-    # Convert Date columns to date
-    df1['Date'] = pd.to_datetime(df1['Date'])
-    df2['Date'] = pd.to_datetime(df2['Date'])
-    # Merge df2 into df1, ensuring no duplicate dates are included from df2
-    merged_df_correct_order = pd.concat([df1, df2[~df2['Date'].isin(df1['Date'])]], ignore_index=True)
-    # Assuming merged_df_correct_order is already defined and available
-    sorted_merged_df = merged_df_correct_order.sort_values(by='Date', ascending=False).reset_index(drop=True)
-    sorted_merged_df.to_csv(file_path, index=False)
+
+    # Check if the file exists
+    if not os.path.exists(file_path):
+        # If the file does not exist, create it with df1
+        df1.to_csv(file_path, index=False)
+        print(f"{file_path} created.")
+    else:
+        # If the file exists, read the existing data
+        df2 = pd.read_csv(file_path, index_col=False)
+        # Convert Date columns to date
+        df1['Date'] = pd.to_datetime(df1['Date'])
+        df2['Date'] = pd.to_datetime(df2['Date'])
+        # Merge df2 into df1, ensuring no duplicate dates are included from df2
+        merged_df_correct_order = pd.concat([df1, df2[~df2['Date'].isin(df1['Date'])]], ignore_index=True)
+        # Sort the merged data
+        sorted_merged_df = merged_df_correct_order.sort_values(by='Date', ascending=False).reset_index(drop=True)
+        # Save the sorted data back to the CSV file
+        sorted_merged_df.to_csv(file_path, index=False)
